@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<meta name="theme-color" content="#fbf6e3" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1c1b19" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fdf8e4" media="(prefers-color-scheme: light)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -14,15 +13,11 @@
 <style>
 /* Layout: nothing but paper. A ruled page that pans forever; one small date in the corner; everything else appears only when touched. */
 :root{
-  --bg:#fbf6e3; --rule:#e9e2c8; --fg:#2b2822; --muted:#a39c86;
+  --bg:#fdf8e4; --rule:#e3dbbd; --fg:#2b2822; --muted:#a39c86; color-scheme:light;
   --accent:#2a5f8a; --danger:#a33a2a;
   --f-body:"IBM Plex Sans KR",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#1c1b19; --rule:#292723; --fg:#e8e4dc; --muted:#7d786f; --accent:#7fb7e0; --danger:#e07b68; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#1c1b19; --rule:#292723; --fg:#e8e4dc; --muted:#7d786f; --accent:#7fb7e0; --danger:#e07b68; color-scheme:dark}
 html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);overflow:hidden;
   -webkit-user-select:none;user-select:none;touch-action:none}
