@@ -102,7 +102,10 @@ function fitAll(){ /* bring every note on this day into one screen */
   const pad=48,top=56,bot=72;
   const k=Math.min(1.25,Math.max(.2,Math.min((innerWidth-pad*2)/(x1-x0),(innerHeight-top-bot)/(y1-y0))));
   view={k,x:(innerWidth-(x1-x0)*k)/2-x0*k,y:top+(innerHeight-top-bot-(y1-y0)*k)/2-y0*k};applyView();save()}
-document.addEventListener('keydown',e=>{if(e.key==='Home'&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){e.preventDefault();fitAll()}});
+document.addEventListener('keydown',e=>{
+  if((e.key==='Delete'||e.key==='Backspace')&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){
+    const sel=world.querySelector('.card.on');if(sel){e.preventDefault();notes=notes.filter(m=>m.id!==sel.dataset.id);save();render();say('지웠어요')}}
+  if(e.key==='Home'&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){e.preventDefault();fitAll()}});
 function save(){boards[day]={notes,view};for(const k of Object.keys(boards))if(!boards[k].notes.length&&k!==day)delete boards[k];
   try{localStorage.setItem(KEY,JSON.stringify({boards}))}catch(e){say('저장 공간이 가득 찼어요. 사진을 몇 장 지워 주세요.')}}
 function dayBar(){
@@ -113,6 +116,9 @@ function dayBar(){
   const keys=[...new Set([today(),...Object.keys(boards)])].sort().reverse();
   for(const k of keys){const b=document.createElement('button');b.type='button';b.textContent=label(k)+(boards[k]&&boards[k].notes.length?'  ·'+boards[k].notes.length:'');
     b.className=k===day?'cur':'';b.onclick=()=>{menuOpen=false;save();openDay(k)};m.appendChild(b)}
+  const c=document.createElement('button');c.type='button';c.textContent='이 판 비우기';c.style.color='var(--danger)';
+  c.onclick=()=>{if(c.dataset.ask){notes.length=0;menuOpen=false;save();openDay(day);say('비웠어요')}else{c.dataset.ask='1';c.textContent='정말 비울까요?';setTimeout(()=>{delete c.dataset.ask;c.textContent='이 판 비우기'},2500)}};
+  m.appendChild(c);
   dateEl.appendChild(m);
 }
 
