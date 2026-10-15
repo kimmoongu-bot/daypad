@@ -164,6 +164,10 @@ function setTarget(p){target={x:p.x,y:snap(p.y-LINE/2)};
   if(!mark){mark=document.createElement('div');mark.className='mark';
     const ta=document.createElement('textarea');ta.id='inbox';ta.rows=1;mark.appendChild(ta);
     mark.addEventListener('pointerdown',e=>e.stopPropagation());
+    /* the caret box sits under the cursor after the first click, so the second click of a double-click lands here */
+    ta.addEventListener('pointerdown',e=>{const now=Date.now();
+      if(!ta.value.trim()&&lastTap&&now-lastTap.t<400&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){e.preventDefault();lastTap=null;pasteAt(toWorld(e.clientX,e.clientY))}
+      else lastTap={t:now,x:e.clientX,y:e.clientY}});
     ta.addEventListener('paste',e=>{if(takePaste(e.clipboardData))e.preventDefault()});
     ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'});
     ta.addEventListener('keydown',e=>{if(e.key==='Escape'){ta.value='';clearTarget()}if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();ta.blur()}});
