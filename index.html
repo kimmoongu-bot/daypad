@@ -36,7 +36,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* date in the corner */
 .date{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));z-index:20;
   font:13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.date{display:flex;gap:2px;align-items:center}
 .date button{padding:4px 6px;color:inherit}
+.date .fit{opacity:.75}.date .fit:hover{opacity:1;color:var(--fg)}
 .date .menu{display:flex;flex-direction:column;align-items:flex-start;background:var(--bg);box-shadow:0 2px 12px rgba(0,0,0,.15);border-radius:8px;padding:4px}
 .date .menu button.cur{color:var(--fg)}
 /* photo in the other corner */
@@ -73,7 +75,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </head>
 <body>
 
-<div class="date" id="date"><button id="daybtn" type="button"></button></div>
+<div class="date" id="date"></div>
 <div id="canvas"><div id="world"><div id="rules"></div></div></div>
 <button class="photo" id="photo" type="button" aria-label="사진 넣기">＋</button>
 <input id="file" type="file" accept="image/*" multiple hidden>
@@ -97,12 +99,22 @@ function load(){
   for(const k of Object.keys(boards))if(daysAgo(k)>=KEEP_DAYS)delete boards[k]; /* 3일 지난 판은 지움 */
   openDay(today());
 }
-function openDay(k){day=k;const b=boards[k]||{notes:[],view:{x:40,y:90,k:1}};boards[k]=b;notes=b.notes;view=b.view;clearTarget();applyView();render();dayBar()}
+function openDay(k){day=k;const b=boards[k]||{notes:[],view:{x:40,y:90,k:1}};boards[k]=b;notes=b.notes;view=b.view;clearTarget();render();dayBar();if(notes.length)fitAll();else applyView()}
+function fitAll(){ /* bring every note on this day into one screen */
+  if(!notes.length){view={x:40,y:90,k:1};applyView();save();say('아직 적은 게 없어요');return}
+  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  for(const n of notes){const el=world.querySelector('.card[data-id="'+n.id+'"]');const w=el?el.offsetWidth:260,h=el?el.offsetHeight:120;
+    x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x+w);y1=Math.max(y1,n.y+h)}
+  const pad=48,top=56,bot=72;
+  const k=Math.min(1.25,Math.max(.2,Math.min((innerWidth-pad*2)/(x1-x0),(innerHeight-top-bot)/(y1-y0))));
+  view={k,x:(innerWidth-(x1-x0)*k)/2-x0*k,y:top+(innerHeight-top-bot-(y1-y0)*k)/2-y0*k};applyView();save()}
+document.addEventListener('keydown',e=>{if(e.key==='Home'&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){e.preventDefault();fitAll()}});
 function save(){boards[day]={notes,view};for(const k of Object.keys(boards))if(!boards[k].notes.length&&k!==day)delete boards[k];
   try{localStorage.setItem(KEY,JSON.stringify({boards}))}catch(e){say('저장 공간이 가득 찼어요. 사진을 몇 장 지워 주세요.')}}
 function dayBar(){
   dateEl.innerHTML='';
-  if(!menuOpen){const b=document.createElement('button');b.type='button';b.textContent=label(day);b.onclick=()=>{menuOpen=true;dayBar()};dateEl.appendChild(b);return}
+  if(!menuOpen){const b=document.createElement('button');b.type='button';b.textContent=label(day);b.onclick=()=>{menuOpen=true;dayBar()};dateEl.appendChild(b);
+    const f=document.createElement('button');f.type='button';f.className='fit';f.textContent='모아보기';f.title='적은 것 전부 한 화면에 (Home 키)';f.onclick=fitAll;dateEl.appendChild(f);return}
   const m=document.createElement('div');m.className='menu';
   const keys=[...new Set([today(),...Object.keys(boards)])].sort().reverse();
   for(const k of keys){const b=document.createElement('button');b.type='button';b.textContent=label(k)+(boards[k]&&boards[k].notes.length?'  ·'+boards[k].notes.length:'');
