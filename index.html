@@ -202,7 +202,9 @@ async function pasteAt(p){
       if(it.types.includes('text/plain')){addText(await (await it.getType('text/plain')).text());got=true;break}
     }
     if(!got)say('클립보드가 비어 있어요');
-  }catch(e){if(!mark||!mark.isConnected)setTarget(p);say('여기서 Ctrl+V 또는 길게 눌러 붙여넣기')}
+  }catch(e){if(!mark||!mark.isConnected)setTarget(p);
+    const denied=e&&e.name==='NotAllowedError'&&!/focus/i.test(e.message||'');
+    say(denied?'클립보드 읽기가 차단돼 있어요 · 자물쇠 → 사이트 설정 → 클립보드 허용 (지금은 Ctrl+V)':'여기서 Ctrl+V 또는 길게 눌러 붙여넣기')}
 }
 
 /* ---- add ---- */
