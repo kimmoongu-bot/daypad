@@ -72,7 +72,6 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <div class="date" id="date"></div>
 <div id="canvas"><div id="world"><div id="rules"></div></div></div>
-<button class="photo" id="photo" type="button" aria-label="사진 넣기">＋</button>
 <input id="file" type="file" accept="image/*" multiple hidden>
 <div class="toast" id="toast"></div>
 
@@ -223,7 +222,6 @@ document.addEventListener('paste',e=>{
   if(e.target.closest&&(e.target.closest('.mark')||e.target.isContentEditable))return;
   if(takePaste(e.clipboardData))e.preventDefault();
 });
-$('#photo').onclick=()=>$('#file').click();
 $('#file').onchange=e=>{for(const f of e.target.files)addImage(f);e.target.value=''};
 canvas.addEventListener('dragover',e=>e.preventDefault());
 canvas.addEventListener('drop',e=>{e.preventDefault();setTarget(toWorld(e.clientX,e.clientY));takePaste(e.dataTransfer)});
