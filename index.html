@@ -179,20 +179,20 @@ function setTarget(p){target={x:p.x,y:snap(p.y-LINE/2)};
     mark.addEventListener('pointerdown',e=>e.stopPropagation());
     /* the caret box sits under the cursor after the first click, so the second click of a double-click lands here */
     ta.addEventListener('pointerdown',e=>{const now=Date.now();
-      if(!ta.value.trim()&&lastTap&&now-lastTap.t<400&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){e.preventDefault();lastTap=null;pasteAt(toWorld(e.clientX,e.clientY))}
+      if(!ta.value.trim()&&lastTap&&now-lastTap.t<700&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<40){e.preventDefault();lastTap=null;pasteAt(toWorld(e.clientX,e.clientY))}
       else lastTap={t:now,x:e.clientX,y:e.clientY}});
     ta.addEventListener('paste',e=>{if(takePaste(e.clipboardData))e.preventDefault()});
     ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'});
     ta.addEventListener('keydown',e=>{if(e.key==='Escape'){ta.value='';clearTarget()}if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();ta.blur()}});
     ta.addEventListener('blur',()=>{const v=ta.value;if(v.trim())addText(v);else if(target)clearTarget()});
   }
-  mark.style.left=target.x+'px';mark.style.top=target.y+'px';world.appendChild(mark);
-  const ta=mark.querySelector('textarea');ta.value='';ta.style.height='';setTimeout(()=>ta.focus(),0)}
+  mark.style.left=target.x+'px';mark.style.top=target.y+'px';if(!mark.isConnected)world.appendChild(mark);
+  const ta=mark.querySelector('textarea');ta.value='';ta.style.height='';setTimeout(()=>{if(mark.isConnected)ta.focus()},0)}
 function clearTarget(){target=null;if(mark){mark.querySelector('textarea').value='';mark.remove()}}
 
 /* double tap/click: read the clipboard straight into that spot; when the browser refuses, leave the caret there */
 async function pasteAt(p){
-  setTarget(p);
+  lastPasteAt=Date.now();setTarget(p);
   try{
     if(!navigator.clipboard||!navigator.clipboard.read)throw 0;
     const items=await navigator.clipboard.read();let got=false;
@@ -256,10 +256,15 @@ function endPointer(e){pointers.delete(e.pointerId);
     document.querySelectorAll('.card.on').forEach(c=>c.classList.remove('on'));
     const now=Date.now(),p=toWorld(e.clientX,e.clientY);
     const open=!!(mark&&mark.isConnected&&!mark.querySelector('textarea').value.trim());
-    if(lastTap&&now-lastTap.t<400&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){lastTap=null;pasteAt(p)}
+    if(lastTap&&now-lastTap.t<700&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<40){lastTap=null;pasteAt(p)}
     else{lastTap={t:now,x:e.clientX,y:e.clientY};if(open)clearTarget();else setTarget(p)}}
   if(pointers.size<2)pinch=null;if(pointers.size===0){pan=null;canvas.classList.remove('panning');save()}}
-canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);
+canvas.addEventListener('pointerup',endPointer);
+let lastPasteAt=0;
+document.addEventListener('dblclick',e=>{ /* OS-timed double click, wherever it lands on the paper */
+  if(e.target.closest('.card')||(e.target.closest('.date')))return;
+  if(e.target.closest('.mark')&&mark.querySelector('textarea').value.trim())return;
+  e.preventDefault();if(Date.now()-lastPasteAt<300)return;lastPasteAt=Date.now();lastTap=null;pasteAt(toWorld(e.clientX,e.clientY))});canvas.addEventListener('pointercancel',endPointer);
 canvas.addEventListener('wheel',e=>{e.preventDefault();
   if(e.ctrlKey||e.metaKey){const k=Math.min(3,Math.max(.25,view.k*Math.exp(-e.deltaY*.002)));const r=k/view.k;
     view.x=e.clientX-(e.clientX-view.x)*r;view.y=e.clientY-(e.clientY-view.y)*r;view.k=k}
