@@ -32,6 +32,16 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .date{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));z-index:20;
   font:13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .date{display:flex;gap:2px;align-items:center}
+.help{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:20}
+.help>button{width:28px;height:28px;padding:0;border-radius:50%;border:1px solid var(--muted);color:var(--muted);font:14px var(--f-mono);line-height:1}
+.help>button:hover{color:var(--fg);border-color:var(--fg)}
+.help .panel{position:absolute;right:0;top:34px;width:min(300px,calc(100vw - 32px));background:var(--bg);border:1px solid var(--rule);border-radius:10px;
+  box-shadow:0 4px 18px rgba(0,0,0,.14);padding:12px 14px;font:13px/1.65 var(--f-body);color:var(--fg);-webkit-user-select:text;user-select:text}
+.help .panel h2{font-size:13px;margin:0 0 6px;color:var(--muted);font-weight:500;letter-spacing:.04em}
+.help .panel dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
+.help .panel dt{color:var(--accent);white-space:nowrap}
+.help .panel dd{margin:0}
+.help .panel p{margin:8px 0 0;color:var(--muted);font-size:12px}
 .date button{padding:4px 6px;color:inherit}
 .date .fit{opacity:.75}.date .fit:hover{opacity:1;color:var(--fg)}
 .date .menu{display:flex;flex-direction:column;align-items:flex-start;background:var(--bg);box-shadow:0 2px 12px rgba(0,0,0,.15);border-radius:8px;padding:4px}
@@ -74,6 +84,20 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <body>
 
 <div class="date" id="date"></div>
+<div class="help" id="help"><button type="button" aria-label="사용법" title="사용법">?</button>
+<div class="panel" hidden>
+<h2>Daypad 사용법</h2>
+<dl>
+<dt>두 번 클릭</dt><dd>그 자리에 클립보드 내용 붙여넣기 (글·그림)</dd>
+<dt>한 번 클릭</dt><dd>커서가 생겨요. 쓰거나 Ctrl+V 하고 다른 곳을 누르면 저장</dd>
+<dt>글 클릭</dt><dd>위에 시각 · 복사 · 수정 · 지움이 떠요. 시각 부분을 잡고 끌면 이동</dd>
+<dt>Delete</dt><dd>고른 것 삭제</dd>
+<dt>빈 곳 끌기</dt><dd>종이 이동 · Ctrl+휠로 확대/축소</dd>
+<dt>모아보기 · Home</dt><dd>적은 것 전부 한 화면에</dd>
+<dt>날짜 클릭</dt><dd>지난 판 보기 · 이 판 비우기 · 종이색</dd>
+</dl>
+<p>판은 날짜별로 나뉘고 3일이 지나면 저절로 사라져요. 내용은 이 기기 브라우저 안에만 저장됩니다.</p>
+</div></div>
 <div id="canvas"><div id="world"><div id="rules"></div></div></div>
 <input id="file" type="file" accept="image/*" multiple hidden>
 <div class="toast" id="toast"></div>
@@ -294,6 +318,11 @@ function dragCard(handle,el,n){
 }
 
 load();
+{const h=document.getElementById('help'),hb=h.querySelector('button'),hp=h.querySelector('.panel');
+ h.addEventListener('pointerdown',e=>e.stopPropagation());
+ hb.onclick=()=>{hp.hidden=!hp.hidden};
+ document.addEventListener('pointerdown',e=>{if(!h.contains(e.target))hp.hidden=true});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')hp.hidden=true});}
 setInterval(()=>{if(!menuOpen)dayBar()},60000);
 })();
 </script>
