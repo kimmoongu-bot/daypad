@@ -110,7 +110,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <dt>Delete</dt><dd>고른 것 삭제</dd>
 <dt>빈 곳 끌기</dt><dd>종이 이동 · Ctrl+휠 또는 Ctrl + / − 로 확대/축소, Ctrl 0 원래대로</dd>
 <dt>모아보기 · Home</dt><dd>적은 것 전부 한 화면에</dd>
-<dt>날짜 클릭</dt><dd>지난 판 보기 · 이 판 비우기 · 종이색 · 줄 간격 · 글자 크기</dd>
+<dt>날짜 클릭</dt><dd>지난 판 보기 · 이 판 비우기 · 종이색 · 글자 크기</dd>
 </dl>
 <p>판은 날짜별로 나뉘고 3일이 지나면 저절로 사라져요. 내용은 이 기기 브라우저 안에만 저장됩니다.</p>
 </div></div>
@@ -131,9 +131,8 @@ const KEY='wnote.v2',KEEP_DAYS=3;let LINE=24;
 const LINES=[['좁게',20],['보통',24],['넓게',28],['아주넓게',34]];
 const SIZES=[['작게',14],['보통',17],['크게',20],['아주크게',24]];let FS=17;
 try{const v=parseInt(localStorage.getItem('wnote.fs'));if(SIZES.some(x=>x[1]===v))FS=v}catch(e){}
-function applySize(n){FS=n;document.documentElement.style.setProperty('--fs',n+'px');try{localStorage.setItem('wnote.fs',n)}catch(e){}}
-document.documentElement.style.setProperty('--fs',FS+'px');
-try{const l=parseInt(localStorage.getItem('wnote.line'));if(LINES.some(x=>x[1]===l))LINE=l}catch(e){}
+function applySize(n){FS=n;document.documentElement.style.setProperty('--fs',n+'px');try{localStorage.setItem('wnote.fs',n)}catch(e){}applyLine(Math.round(n*1.5))}
+document.documentElement.style.setProperty('--fs',FS+'px');LINE=Math.round(FS*1.5);document.documentElement.style.setProperty('--line',LINE+'px');
 function applyLine(n){LINE=n;document.documentElement.style.setProperty('--line',n+'px');try{localStorage.setItem('wnote.line',n)}catch(e){}
   for(const q of notes)q.y=Math.round(q.y/n)*n;applyView();render();save()}
 document.documentElement.style.setProperty('--line',LINE+'px');
@@ -188,9 +187,6 @@ function dayBar(){
   const row=document.createElement('div');row.className='papers';
   for(const [nm,col] of PAPERS){const b=document.createElement('button');b.type='button';b.title=nm;b.style.background=col;b.className=col===paper?'cur':'';b.onclick=e=>{e.stopPropagation();applyPaper(col);dayBar()};row.appendChild(b)}
   m.appendChild(row);
-  const lr=document.createElement('div');lr.className='lines';const lab=document.createElement('span');lab.textContent='줄 간격';lr.appendChild(lab);
-  for(const [nm,n] of LINES){const b=document.createElement('button');b.type='button';b.textContent=nm;b.className=n===LINE?'cur':'';b.onclick=e=>{e.stopPropagation();applyLine(n);dayBar()};lr.appendChild(b)}
-  m.appendChild(lr);
   const fr=document.createElement('div');fr.className='lines';const fl=document.createElement('span');fl.textContent='글자 크기';fr.appendChild(fl);
   for(const [nm,n] of SIZES){const b=document.createElement('button');b.type='button';b.textContent=nm;b.className=n===FS?'cur':'';b.onclick=e=>{e.stopPropagation();applySize(n);dayBar()};fr.appendChild(b)}
   m.appendChild(fr);
