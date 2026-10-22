@@ -59,9 +59,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .photo:hover{color:var(--fg)}
 /* a note is just text (or a picture) on the page */
 .card{position:absolute;width:260px;cursor:default}
+.card.txt{width:480px;max-width:calc(100vw - 40px)}
 .card.img{width:280px}
-.card.img .rs{position:absolute;right:-6px;bottom:-6px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);cursor:nwse-resize;opacity:0;pointer-events:none}
-.card.img.on .rs{opacity:1;pointer-events:auto}
+.card .rs{position:absolute;right:-6px;bottom:-6px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);cursor:ew-resize;opacity:0;pointer-events:none}
+.card.on .rs{opacity:1;pointer-events:auto}
+.card.img .rs{cursor:nwse-resize}
 .card .head{display:flex;align-items:center;gap:2px;position:absolute;left:0;bottom:100%;padding:0 0 2px;
   opacity:0;pointer-events:none;transition:opacity .12s;white-space:nowrap}
 .card.on .head,.card:focus-within .head{opacity:1;pointer-events:auto}
@@ -79,7 +81,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card.on img{outline:1px solid var(--accent);outline-offset:3px}
 .card.copied .body{color:var(--accent)}
 /* the input is only a caret on the page */
-.mark{position:absolute;width:260px;cursor:default}
+.mark{position:absolute;width:480px;max-width:calc(100vw - 40px);cursor:default}
 .mark textarea{display:block;width:100%;box-sizing:border-box;min-height:var(--line);border:none;background:none;resize:none;padding:0;
   font:var(--fs) var(--f-body);line-height:var(--line);color:var(--fg);outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--accent);overflow:hidden}
 .sites{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:10px;
@@ -106,7 +108,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <dl>
 <dt>두 번 클릭</dt><dd>그 자리에 클립보드 내용 붙여넣기 (글·그림)</dd>
 <dt>한 번 클릭</dt><dd>커서가 생겨요. 쓰거나 Ctrl+V 하고 다른 곳을 누르면 저장</dd>
-<dt>글</dt><dd>잡고 끌면 이동 · 클릭하면 위에 복사 · 수정 · 지움이 떠요</dd>
+<dt>글</dt><dd>잡고 끌면 이동 · 클릭하면 위에 복사 · 수정 · 지움이 뜨고, 오른쪽 아래 점을 끌면 폭 조절</dd>
 <dt>사진</dt><dd>잡고 끌면 이동 · 두 번 클릭하면 원래 크기 · 모서리 점을 끌면 크기 조절</dd>
 <dt>Delete</dt><dd>고른 것 삭제</dd>
 <dt>빈 곳 끌기</dt><dd>종이 이동 · Ctrl+휠 또는 Ctrl + / − 로 확대/축소, Ctrl 0 원래대로</dd>
@@ -217,7 +219,7 @@ function render(){
   if(target&&mark)world.appendChild(mark);
 }
 function cardEl(n){
-  const el=document.createElement('div');el.className='card'+(n.type==='img'?' img':'');el.dataset.id=n.id;
+  const el=document.createElement('div');el.className='card'+(n.type==='img'?' img':' txt');el.dataset.id=n.id;
   el.style.left=n.x+'px';el.style.top=n.y+'px';
   const head=document.createElement('div');head.className='head';
   const g=document.createElement('span');g.className='grip';g.textContent='⠿ '+n.at;head.appendChild(g);
@@ -232,11 +234,12 @@ function cardEl(n){
   head.appendChild(del);el.appendChild(head);
   if(n.type==='text'){const b=document.createElement('div');b.className='body'+(isProse(n.text)?' prose':'');b.textContent=n.text;el.appendChild(b);dragCard(b,el,n)}
   else{const im=document.createElement('img');im.src=n.src;im.alt='붙여넣은 그림';im.draggable=false;im.style.cursor='grab';el.appendChild(im);dragCard(im,el,n);
-    if(n.w)el.style.width=n.w+'px';
     im.addEventListener('dblclick',e=>{e.stopPropagation();e.preventDefault();
       const nat=im.naturalWidth||280,big=Math.min(nat,Math.round((innerWidth-80)/view.k));
       n.w=(n.w&&n.w>300)?280:big;el.style.width=n.w+'px';save();say(n.w>300?'원래 크기 · 다시 두 번 누르면 작게':'작게')});
-    const rs=document.createElement('div');rs.className='rs';rs.title='끌어서 크기 조절';el.appendChild(rs);
+  }
+  if(n.w)el.style.width=n.w+'px';
+  {const rs=document.createElement('div');rs.className='rs';rs.title='끌어서 폭 조절';el.appendChild(rs);
     let r0=null;rs.addEventListener('pointerdown',e=>{e.stopPropagation();r0={x:e.clientX,w:el.offsetWidth};rs.setPointerCapture(e.pointerId)});
     rs.addEventListener('pointermove',e=>{if(!r0)return;n.w=Math.max(80,Math.round(r0.w+(e.clientX-r0.x)/view.k));el.style.width=n.w+'px'});
     const rEnd=()=>{if(!r0)return;r0=null;save()};rs.addEventListener('pointerup',rEnd);rs.addEventListener('pointercancel',rEnd)}
