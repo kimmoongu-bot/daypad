@@ -131,8 +131,7 @@ const KEY='wnote.v2',KEEP_DAYS=3;let LINE=24;
 const LINES=[['좁게',20],['보통',24],['넓게',28],['아주넓게',34]];
 const SIZES=[['작게',14],['보통',17],['크게',20],['아주크게',24]];let FS=17;
 try{const v=parseInt(localStorage.getItem('wnote.fs'));if(SIZES.some(x=>x[1]===v))FS=v}catch(e){}
-function applySize(n){FS=n;document.documentElement.style.setProperty('--fs',n+'px');try{localStorage.setItem('wnote.fs',n)}catch(e){}
-  /* keep the line at least as tall as the text */ if(LINE<n+6){const nl=LINES.find(x=>x[1]>=n+6);if(nl)applyLine(nl[1])}}
+function applySize(n){FS=n;document.documentElement.style.setProperty('--fs',n+'px');try{localStorage.setItem('wnote.fs',n)}catch(e){}}
 document.documentElement.style.setProperty('--fs',FS+'px');
 try{const l=parseInt(localStorage.getItem('wnote.line'));if(LINES.some(x=>x[1]===l))LINE=l}catch(e){}
 function applyLine(n){LINE=n;document.documentElement.style.setProperty('--line',n+'px');try{localStorage.setItem('wnote.line',n)}catch(e){}
