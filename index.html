@@ -13,7 +13,7 @@
 <style>
 /* Layout: nothing but paper. A ruled page that pans forever; one small date in the corner; everything else appears only when touched. */
 :root{
-  --bg:#fffef9; --rule:#e8e4d6; --fg:#2b2822; --muted:#7d7665; color-scheme:light;
+  --bg:#fffef9; --rule:#e8e4d6; --fg:#2b2822; --muted:#7d7665; color-scheme:light; --line:24px;
   --accent:#2a5f8a; --danger:#a33a2a;
   --f-body:"IBM Plex Sans KR",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -49,6 +49,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .date .papers{display:flex;gap:6px;padding:6px 6px 4px;border-top:1px solid var(--rule);margin-top:4px}
 .date .papers button{width:22px;height:22px;padding:0;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
 .date .papers button.cur{outline:2px solid var(--accent);outline-offset:1px}
+.date .lines{display:flex;gap:2px;padding:2px 2px 2px;border-top:1px solid var(--rule);margin-top:4px}
+.date .lines span{align-self:center;padding:0 6px;color:var(--muted)}
+.date .lines button{padding:4px 8px}
+.date .lines button.cur{color:var(--fg);text-decoration:underline;text-underline-offset:3px}
 /* photo in the other corner */
 .photo{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:20;
   width:40px;height:40px;padding:0;color:var(--muted);font-size:22px;line-height:1}
@@ -64,7 +68,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card .head button{font-size:12px;color:var(--muted);padding:4px 7px}
 .card .head button:hover{color:var(--fg)}
 .card .del{color:var(--danger)}
-.card .body{padding:0;font-size:15px;line-height:24px;white-space:pre-wrap;word-break:break-word;
+.card .body{padding:0;font-size:15px;line-height:var(--line);white-space:pre-wrap;word-break:break-word;
   -webkit-user-select:text;user-select:text;cursor:text;font-family:var(--f-mono)}
 .card .body.prose{font-family:var(--f-body)}
 .card .body[contenteditable="true"],.card .body[contenteditable="plaintext-only"]{outline:none;color:var(--accent)}
@@ -73,8 +77,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card.copied .body{color:var(--accent)}
 /* the input is only a caret on the page */
 .mark{position:absolute;width:260px;cursor:default}
-.mark textarea{display:block;width:100%;box-sizing:border-box;min-height:24px;border:none;background:none;resize:none;padding:0;
-  font:15px var(--f-body);line-height:24px;color:var(--fg);outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--accent);overflow:hidden}
+.mark textarea{display:block;width:100%;box-sizing:border-box;min-height:var(--line);border:none;background:none;resize:none;padding:0;
+  font:15px var(--f-body);line-height:var(--line);color:var(--fg);outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--accent);overflow:hidden}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;
   font:13px var(--f-body);color:var(--muted);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1}
@@ -106,7 +110,12 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 (function(){
 const $=s=>document.querySelector(s);
 const canvas=$('#canvas'),world=$('#world'),toast=$('#toast'),dateEl=$('#date'),dayBtn=$('#daybtn');
-const KEY='wnote.v2',KEEP_DAYS=3,LINE=24;
+const KEY='wnote.v2',KEEP_DAYS=3;let LINE=24;
+const LINES=[['좁게',20],['보통',24],['넓게',30],['아주넓게',36]];
+try{const l=parseInt(localStorage.getItem('wnote.line'));if(LINES.some(x=>x[1]===l))LINE=l}catch(e){}
+function applyLine(n){LINE=n;document.documentElement.style.setProperty('--line',n+'px');try{localStorage.setItem('wnote.line',n)}catch(e){}
+  for(const q of notes)q.y=Math.round(q.y/n)*n;applyView();render();save()}
+document.documentElement.style.setProperty('--line',LINE+'px');
 let notes=[],view={x:40,y:90,k:1},target=null,mark=null,lastTap=null,menuOpen=false;
 let boards={},day=today();
 /* paper colors: name → background; the rule color is derived from it */
@@ -155,6 +164,9 @@ function dayBar(){
   const row=document.createElement('div');row.className='papers';
   for(const [nm,col] of PAPERS){const b=document.createElement('button');b.type='button';b.title=nm;b.style.background=col;b.className=col===paper?'cur':'';b.onclick=e=>{e.stopPropagation();applyPaper(col);dayBar()};row.appendChild(b)}
   m.appendChild(row);
+  const lr=document.createElement('div');lr.className='lines';const lab=document.createElement('span');lab.textContent='줄 간격';lr.appendChild(lab);
+  for(const [nm,n] of LINES){const b=document.createElement('button');b.type='button';b.textContent=nm;b.className=n===LINE?'cur':'';b.onclick=e=>{e.stopPropagation();applyLine(n);dayBar()};lr.appendChild(b)}
+  m.appendChild(lr);
   dateEl.appendChild(m);
 }
 
