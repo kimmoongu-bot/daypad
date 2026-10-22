@@ -79,13 +79,15 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .mark{position:absolute;width:260px;cursor:default}
 .mark textarea{display:block;width:100%;box-sizing:border-box;min-height:var(--line);border:none;background:none;resize:none;padding:0;
   font:15px var(--f-body);line-height:var(--line);color:var(--fg);outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--accent);overflow:hidden}
-.sites{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:4px;flex-wrap:wrap;
-  padding-block:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  font:12px var(--f-body);color:var(--muted);pointer-events:none}
-.sites a{pointer-events:auto;color:var(--muted);text-decoration:none;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--bg);white-space:nowrap}
-.sites a:hover{color:var(--fg);border-color:var(--muted)}
-.sites a b{font-weight:500;color:var(--fg)}
+.sites{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:10px;
+  padding-block:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+.sites a{pointer-events:auto;display:block;flex:0 1 240px;min-width:0;border-radius:8px;overflow:hidden;border:1px solid var(--rule);
+  box-shadow:0 1px 4px rgba(0,0,0,.08);opacity:.85;transition:opacity .15s,transform .15s}
+.sites a:hover{opacity:1;transform:translateY(-1px)}
+.sites img{display:block;width:100%;height:auto;aspect-ratio:4/1;object-fit:cover}
+@media (max-width:600px){.sites{gap:6px}.sites a{flex-basis:0;flex-grow:1}}
+@media (prefers-reduced-motion:reduce){.sites a{transition:none}}
 .toast{position:fixed;left:50%;bottom:calc(44px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;
   font:13px var(--f-body);color:var(--muted);opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1}
@@ -112,9 +114,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div id="canvas"><div id="world"><div id="rules"></div></div></div>
 <input id="file" type="file" accept="image/*" multiple hidden>
 <nav class="sites" aria-label="코드파인드의 다른 사이트">
-<a href="https://korivu.codetfind.com/" target="_blank" rel="noopener"><b>KORIVU</b> 한국 실시간 웹캠</a>
-<a href="https://oneuleun.com/" target="_blank" rel="noopener"><b>오늘은...</b> 하루 한 장</a>
-<a href="https://paws.day/" target="_blank" rel="noopener"><b>PawsDay</b> 오늘의 냥멍</a>
+<a href="https://korivu.codetfind.com/" target="_blank" rel="noopener"><img src="banners/korivu.png" alt="KORIVU — 한국의 지금을 만나보세요" width="720" height="180"></a>
+<a href="https://oneuleun.com/" target="_blank" rel="noopener"><img src="banners/oneuleun.png" alt="오늘은... — 하루 한 장" width="720" height="180"></a>
+<a href="https://paws.day/" target="_blank" rel="noopener"><img src="banners/pawsday.png" alt="PawsDay — 하루 한 마리, 오늘의 주인공" width="720" height="180"></a>
 </nav>
 <div class="toast" id="toast"></div>
 
