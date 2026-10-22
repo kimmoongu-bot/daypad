@@ -13,7 +13,7 @@
 <style>
 /* Layout: nothing but paper. A ruled page that pans forever; one small date in the corner; everything else appears only when touched. */
 :root{
-  --bg:#fffef9; --rule:#e8e4d6; --fg:#2b2822; --muted:#7d7665; color-scheme:light; --line:24px; --fs:17px;
+  --bg:#fffef9; --rule:#f0ede3; --fg:#2b2822; --muted:#7d7665; color-scheme:light; --line:24px; --fs:17px;
   --accent:#2a5f8a; --danger:#a33a2a;
   --f-body:"IBM Plex Sans KR",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -142,7 +142,7 @@ let boards={},day=today();
 /* paper colors: name → background; the rule color is derived from it */
 const PAPERS=[['흰색','#fffef9'],['크림','#fdf8e4'],['노랑','#fff7c2'],['연두','#f1f8e4'],['하늘','#eaf4fb'],['회색','#f2f2f0']];
 let paper='#fffef9';try{paper=localStorage.getItem('wnote.paper')||paper}catch(e){}
-function applyPaper(c){paper=c;const r=document.documentElement.style;r.setProperty('--bg',c);r.setProperty('--rule',`color-mix(in srgb,${c} 86%,#6b6555)`);
+function applyPaper(c){paper=c;const r=document.documentElement.style;r.setProperty('--bg',c);r.setProperty('--rule',`color-mix(in srgb,${c} 92%,#6b6555)`);
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=c;try{localStorage.setItem('wnote.paper',c)}catch(e){}}
 applyPaper(paper);
 function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
