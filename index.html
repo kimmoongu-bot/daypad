@@ -112,7 +112,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <dt>사진</dt><dd>잡고 끌면 이동 · 두 번 클릭하면 원래 크기 · 모서리 점을 끌면 크기 조절</dd>
 <dt>Delete</dt><dd>고른 것 삭제</dd>
 <dt>빈 곳 끌기</dt><dd>종이 이동 · Ctrl+휠 또는 Ctrl + / − 로 확대/축소, Ctrl 0 원래대로</dd>
-<dt>모아보기 · Home</dt><dd>적은 것 전부 한 화면에</dd>
+<dt>모아보기 · Home</dt><dd>흩어진 것을 차곡차곡 정렬 · Shift+Home은 축소해서 전체 보기</dd>
 <dt>날짜 클릭</dt><dd>지난 판 보기 · 이 판 비우기 · 종이색 · 글자 크기</dd>
 </dl>
 <p>판은 날짜별로 나뉘고 3일이 지나면 저절로 사라져요. 내용은 이 기기 브라우저 안에만 저장됩니다.</p>
@@ -158,8 +158,17 @@ function load(){
   for(const k of Object.keys(boards))if(daysAgo(k)>=KEEP_DAYS)delete boards[k]; /* 3일 지난 판은 지움 */
   openDay(today());
 }
-function openDay(k){day=k;const b=boards[k]||{notes:[],view:{x:40,y:90,k:1}};boards[k]=b;notes=b.notes;view=b.view;clearTarget();render();dayBar();if(notes.length)fitAll();else applyView()}
-function fitAll(){ /* bring every note on this day into one screen */
+function openDay(k){day=k;const b=boards[k]||{notes:[],view:{x:40,y:90,k:1}};boards[k]=b;notes=b.notes;view=b.view;clearTarget();render();dayBar();view.k=1;applyView()}
+function fitAll(){ /* gather scattered notes into neat columns at 100% */
+  if(!notes.length){view={x:40,y:90,k:1};applyView();save();say('아직 적은 게 없어요');return}
+  const order=[...notes].sort((a,b)=>(a.y-b.y)||(a.x-b.x));
+  const gap=LINE*2,colGap=40,top=snap(LINE*2),left=24,maxH=innerHeight-150;
+  let x=left,y=top,colW=0;
+  for(const n of order){const el=world.querySelector('.card[data-id="'+n.id+'"]');const w=el?el.offsetWidth:(n.w||480),h=el?el.offsetHeight:LINE;
+    if(y>top&&y+h>maxH){x+=colW+colGap;y=top;colW=0}
+    n.x=x;n.y=snap(y);y=snap(y+h+gap);colW=Math.max(colW,w)}
+  view={k:1,x:0,y:0};applyView();render();save();say('모았어요')}
+function fitZoom(){ /* old behaviour: see everything at once, zoomed out */
   if(!notes.length){view={x:40,y:90,k:1};applyView();save();say('아직 적은 게 없어요');return}
   let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
   for(const n of notes){const el=world.querySelector('.card[data-id="'+n.id+'"]');const w=el?el.offsetWidth:(n.w||260),h=el?el.offsetHeight:120;
@@ -173,13 +182,13 @@ document.addEventListener('keydown',e=>{
     view.x=cx-(cx-view.x)*r;view.y=cy-(cy-view.y)*r;view.k=k;applyView();save();say('확대 '+Math.round(k*100)+'%');return}
   if((e.key==='Delete'||e.key==='Backspace')&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){
     const sel=world.querySelector('.card.on');if(sel){e.preventDefault();notes=notes.filter(m=>m.id!==sel.dataset.id);save();render();say('지웠어요')}}
-  if(e.key==='Home'&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){e.preventDefault();fitAll()}});
+  if(e.key==='Home'&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){e.preventDefault();e.shiftKey?fitZoom():fitAll()}});
 function save(){boards[day]={notes,view};for(const k of Object.keys(boards))if(!boards[k].notes.length&&k!==day)delete boards[k];
   try{localStorage.setItem(KEY,JSON.stringify({boards}))}catch(e){say('저장 공간이 가득 찼어요. 사진을 몇 장 지워 주세요.')}}
 function dayBar(){
   dateEl.innerHTML='';
   if(!menuOpen){const b=document.createElement('button');b.type='button';b.textContent=label(day);b.onclick=()=>{menuOpen=true;dayBar()};dateEl.appendChild(b);
-    const f=document.createElement('button');f.type='button';f.className='fit';f.textContent='모아보기';f.title='적은 것 전부 한 화면에 (Home 키)';f.onclick=fitAll;dateEl.appendChild(f);return}
+    const f=document.createElement('button');f.type='button';f.className='fit';f.textContent='모아보기';f.title='흩어진 것을 차곡차곡 정렬 (Home 키) · Shift+Home은 축소해서 전체 보기';f.onclick=fitAll;dateEl.appendChild(f);return}
   const m=document.createElement('div');m.className='menu';
   const keys=[...new Set([today(),...Object.keys(boards)])].sort().reverse();
   for(const k of keys){const b=document.createElement('button');b.type='button';b.textContent=label(k)+(boards[k]&&boards[k].notes.length?'  ·'+boards[k].notes.length:'');
