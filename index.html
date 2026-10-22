@@ -13,7 +13,7 @@
 <style>
 /* Layout: nothing but paper. A ruled page that pans forever; one small date in the corner; everything else appears only when touched. */
 :root{
-  --bg:#fffef9; --rule:#e8e4d6; --fg:#2b2822; --muted:#7d7665; color-scheme:light; --line:24px;
+  --bg:#fffef9; --rule:#e8e4d6; --fg:#2b2822; --muted:#7d7665; color-scheme:light; --line:24px; --fs:15px;
   --accent:#2a5f8a; --danger:#a33a2a;
   --f-body:"IBM Plex Sans KR",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -70,7 +70,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card .head button{font-size:12px;color:var(--muted);padding:4px 7px}
 .card .head button:hover{color:var(--fg)}
 .card .del{color:var(--danger)}
-.card .body{padding:0;font-size:15px;line-height:var(--line);white-space:pre-wrap;word-break:break-word;
+.card .body{padding:0;font-size:var(--fs);line-height:var(--line);white-space:pre-wrap;word-break:break-word;
   -webkit-user-select:text;user-select:text;cursor:text;font-family:var(--f-mono)}
 .card .body.prose{font-family:var(--f-body)}
 .card .body[contenteditable="true"],.card .body[contenteditable="plaintext-only"]{outline:none;color:var(--accent)}
@@ -80,7 +80,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* the input is only a caret on the page */
 .mark{position:absolute;width:260px;cursor:default}
 .mark textarea{display:block;width:100%;box-sizing:border-box;min-height:var(--line);border:none;background:none;resize:none;padding:0;
-  font:15px var(--f-body);line-height:var(--line);color:var(--fg);outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--accent);overflow:hidden}
+  font:var(--fs) var(--f-body);line-height:var(--line);color:var(--fg);outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--accent);overflow:hidden}
 .sites{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:10px;
   padding-block:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
@@ -110,7 +110,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <dt>Delete</dt><dd>고른 것 삭제</dd>
 <dt>빈 곳 끌기</dt><dd>종이 이동 · Ctrl+휠 또는 Ctrl + / − 로 확대/축소, Ctrl 0 원래대로</dd>
 <dt>모아보기 · Home</dt><dd>적은 것 전부 한 화면에</dd>
-<dt>날짜 클릭</dt><dd>지난 판 보기 · 이 판 비우기 · 종이색</dd>
+<dt>날짜 클릭</dt><dd>지난 판 보기 · 이 판 비우기 · 종이색 · 줄 간격 · 글자 크기</dd>
 </dl>
 <p>판은 날짜별로 나뉘고 3일이 지나면 저절로 사라져요. 내용은 이 기기 브라우저 안에만 저장됩니다.</p>
 </div></div>
@@ -129,6 +129,11 @@ const $=s=>document.querySelector(s);
 const canvas=$('#canvas'),world=$('#world'),toast=$('#toast'),dateEl=$('#date'),dayBtn=$('#daybtn');
 const KEY='wnote.v2',KEEP_DAYS=3;let LINE=24;
 const LINES=[['좁게',20],['보통',24],['넓게',30],['아주넓게',36]];
+const SIZES=[['작게',13],['보통',15],['크게',18],['아주크게',22]];let FS=15;
+try{const v=parseInt(localStorage.getItem('wnote.fs'));if(SIZES.some(x=>x[1]===v))FS=v}catch(e){}
+function applySize(n){FS=n;document.documentElement.style.setProperty('--fs',n+'px');try{localStorage.setItem('wnote.fs',n)}catch(e){}
+  /* keep the line at least as tall as the text */ if(LINE<n+6){const nl=LINES.find(x=>x[1]>=n+6);if(nl)applyLine(nl[1])}}
+document.documentElement.style.setProperty('--fs',FS+'px');
 try{const l=parseInt(localStorage.getItem('wnote.line'));if(LINES.some(x=>x[1]===l))LINE=l}catch(e){}
 function applyLine(n){LINE=n;document.documentElement.style.setProperty('--line',n+'px');try{localStorage.setItem('wnote.line',n)}catch(e){}
   for(const q of notes)q.y=Math.round(q.y/n)*n;applyView();render();save()}
@@ -187,6 +192,9 @@ function dayBar(){
   const lr=document.createElement('div');lr.className='lines';const lab=document.createElement('span');lab.textContent='줄 간격';lr.appendChild(lab);
   for(const [nm,n] of LINES){const b=document.createElement('button');b.type='button';b.textContent=nm;b.className=n===LINE?'cur':'';b.onclick=e=>{e.stopPropagation();applyLine(n);dayBar()};lr.appendChild(b)}
   m.appendChild(lr);
+  const fr=document.createElement('div');fr.className='lines';const fl=document.createElement('span');fl.textContent='글자 크기';fr.appendChild(fl);
+  for(const [nm,n] of SIZES){const b=document.createElement('button');b.type='button';b.textContent=nm;b.className=n===FS?'cur':'';b.onclick=e=>{e.stopPropagation();applySize(n);dayBar()};fr.appendChild(b)}
+  m.appendChild(fr);
   dateEl.appendChild(m);
 }
 
