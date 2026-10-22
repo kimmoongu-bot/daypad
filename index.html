@@ -195,7 +195,7 @@ function cardEl(n){
   del.onclick=e=>{e.stopPropagation();notes=notes.filter(m=>m.id!==n.id);save();render()};
   head.appendChild(del);el.appendChild(head);
   if(n.type==='text'){const b=document.createElement('div');b.className='body'+(isProse(n.text)?' prose':'');b.textContent=n.text;el.appendChild(b)}
-  else{const im=document.createElement('img');im.src=n.src;im.alt='붙여넣은 그림';im.draggable=false;el.appendChild(im)}
+  else{const im=document.createElement('img');im.src=n.src;im.alt='붙여넣은 그림';im.draggable=false;im.style.cursor='grab';el.appendChild(im);dragCard(im,el,n)}
   dragCard(g,el,n);
   el.addEventListener('pointerdown',e=>{e.stopPropagation();document.querySelectorAll('.card.on').forEach(c=>{if(c!==el)c.classList.remove('on')});el.classList.add('on')});
   return el;
@@ -310,7 +310,8 @@ canvas.addEventListener('wheel',e=>{e.preventDefault();
 /* ---- move a note by its grip ---- */
 function dragCard(handle,el,n){
   let st=null;
-  handle.addEventListener('pointerdown',e=>{e.stopPropagation();st={sx:e.clientX,sy:e.clientY,x:n.x,y:n.y};handle.setPointerCapture(e.pointerId);handle.classList.add('drag');el.style.zIndex=10});
+  handle.addEventListener('pointerdown',e=>{e.stopPropagation();document.querySelectorAll('.card.on').forEach(c=>{if(c!==el)c.classList.remove('on')});el.classList.add('on');
+    st={sx:e.clientX,sy:e.clientY,x:n.x,y:n.y};handle.setPointerCapture(e.pointerId);handle.classList.add('drag');el.style.zIndex=10});
   handle.addEventListener('pointermove',e=>{if(!st)return;n.x=st.x+(e.clientX-st.sx)/view.k;n.y=st.y+(e.clientY-st.sy)/view.k;
     el.style.left=n.x+'px';el.style.top=n.y+'px'});
   const up=()=>{if(!st)return;st=null;n.y=snap(n.y);el.style.top=n.y+'px';handle.classList.remove('drag');el.style.zIndex='';save()};
