@@ -13,7 +13,7 @@
 <style>
 /* Layout: nothing but paper. A ruled page that pans forever; one small date in the corner; everything else appears only when touched. */
 :root{
-  --bg:#fffef9; --rule:#e8e4d6; --fg:#2b2822; --muted:#7d7665; color-scheme:light; --line:24px; --fs:15px;
+  --bg:#fffef9; --rule:#e8e4d6; --fg:#2b2822; --muted:#7d7665; color-scheme:light; --line:28px; --fs:19px;
   --accent:#2a5f8a; --danger:#a33a2a;
   --f-body:"IBM Plex Sans KR",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -30,7 +30,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #rules{position:absolute;left:-100000px;top:-100000px;width:200000px;height:200000px;pointer-events:none}
 /* date in the corner */
 .date{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));z-index:20;
-  font:13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+  font:14px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
 .date{display:flex;gap:2px;align-items:center}
 .help{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:20}
 .help>button{width:28px;height:28px;padding:0;border-radius:50%;border:1px solid var(--muted);color:var(--muted);font:14px var(--f-mono);line-height:1}
@@ -127,9 +127,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 (function(){
 const $=s=>document.querySelector(s);
 const canvas=$('#canvas'),world=$('#world'),toast=$('#toast'),dateEl=$('#date'),dayBtn=$('#daybtn');
-const KEY='wnote.v2',KEEP_DAYS=3;let LINE=24;
-const LINES=[['좁게',20],['보통',24],['넓게',30],['아주넓게',36]];
-const SIZES=[['작게',13],['보통',15],['크게',18],['아주크게',22]];let FS=15;
+const KEY='wnote.v2',KEEP_DAYS=3;let LINE=28;
+const LINES=[['좁게',22],['보통',28],['넓게',34],['아주넓게',40]];
+const SIZES=[['작게',16],['보통',19],['크게',24],['아주크게',30]];let FS=19;
 try{const v=parseInt(localStorage.getItem('wnote.fs'));if(SIZES.some(x=>x[1]===v))FS=v}catch(e){}
 function applySize(n){FS=n;document.documentElement.style.setProperty('--fs',n+'px');try{localStorage.setItem('wnote.fs',n)}catch(e){}
   /* keep the line at least as tall as the text */ if(LINE<n+6){const nl=LINES.find(x=>x[1]>=n+6);if(nl)applyLine(nl[1])}}
