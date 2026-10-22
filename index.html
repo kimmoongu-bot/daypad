@@ -60,6 +60,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* a note is just text (or a picture) on the page */
 .card{position:absolute;width:260px;cursor:default}
 .card.img{width:280px}
+.card.img .rs{position:absolute;right:-6px;bottom:-6px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);cursor:nwse-resize;opacity:0;pointer-events:none}
+.card.img.on .rs{opacity:1;pointer-events:auto}
 .card .head{display:flex;align-items:center;gap:2px;position:absolute;left:0;bottom:100%;padding:0 0 2px;
   opacity:0;pointer-events:none;transition:opacity .12s;white-space:nowrap}
 .card.on .head,.card:focus-within .head{opacity:1;pointer-events:auto}
@@ -104,8 +106,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <dt>두 번 클릭</dt><dd>그 자리에 클립보드 내용 붙여넣기 (글·그림)</dd>
 <dt>한 번 클릭</dt><dd>커서가 생겨요. 쓰거나 Ctrl+V 하고 다른 곳을 누르면 저장</dd>
 <dt>글 클릭</dt><dd>위에 시각 · 복사 · 수정 · 지움이 떠요. 시각 부분을 잡고 끌면 이동</dd>
+<dt>사진</dt><dd>잡고 끌면 이동 · 두 번 클릭하면 원래 크기 · 모서리 점을 끌면 크기 조절</dd>
 <dt>Delete</dt><dd>고른 것 삭제</dd>
-<dt>빈 곳 끌기</dt><dd>종이 이동 · Ctrl+휠로 확대/축소</dd>
+<dt>빈 곳 끌기</dt><dd>종이 이동 · Ctrl+휠 또는 Ctrl + / − 로 확대/축소, Ctrl 0 원래대로</dd>
 <dt>모아보기 · Home</dt><dd>적은 것 전부 한 화면에</dd>
 <dt>날짜 클릭</dt><dd>지난 판 보기 · 이 판 비우기 · 종이색</dd>
 </dl>
@@ -153,12 +156,15 @@ function openDay(k){day=k;const b=boards[k]||{notes:[],view:{x:40,y:90,k:1}};boa
 function fitAll(){ /* bring every note on this day into one screen */
   if(!notes.length){view={x:40,y:90,k:1};applyView();save();say('아직 적은 게 없어요');return}
   let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
-  for(const n of notes){const el=world.querySelector('.card[data-id="'+n.id+'"]');const w=el?el.offsetWidth:260,h=el?el.offsetHeight:120;
+  for(const n of notes){const el=world.querySelector('.card[data-id="'+n.id+'"]');const w=el?el.offsetWidth:(n.w||260),h=el?el.offsetHeight:120;
     x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x+w);y1=Math.max(y1,n.y+h)}
   const pad=48,top=56,bot=72;
   const k=Math.min(1.25,Math.max(.2,Math.min((innerWidth-pad*2)/(x1-x0),(innerHeight-top-bot)/(y1-y0))));
   view={k,x:(innerWidth-(x1-x0)*k)/2-x0*k,y:top+(innerHeight-top-bot-(y1-y0)*k)/2-y0*k};applyView();save()}
 document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&(e.key==='='||e.key==='+'||e.key==='-'||e.key==='0')){e.preventDefault();
+    const cx=innerWidth/2,cy=innerHeight/2;let k=e.key==='0'?1:Math.min(3,Math.max(.25,view.k*(e.key==='-'?.8:1.25)));const r=k/view.k;
+    view.x=cx-(cx-view.x)*r;view.y=cy-(cy-view.y)*r;view.k=k;applyView();save();say('확대 '+Math.round(k*100)+'%');return}
   if((e.key==='Delete'||e.key==='Backspace')&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){
     const sel=world.querySelector('.card.on');if(sel){e.preventDefault();notes=notes.filter(m=>m.id!==sel.dataset.id);save();render();say('지웠어요')}}
   if(e.key==='Home'&&!(e.target.closest&&(e.target.closest('textarea')||e.target.isContentEditable))){e.preventDefault();fitAll()}});
@@ -221,7 +227,15 @@ function cardEl(n){
   del.onclick=e=>{e.stopPropagation();notes=notes.filter(m=>m.id!==n.id);save();render()};
   head.appendChild(del);el.appendChild(head);
   if(n.type==='text'){const b=document.createElement('div');b.className='body'+(isProse(n.text)?' prose':'');b.textContent=n.text;el.appendChild(b)}
-  else{const im=document.createElement('img');im.src=n.src;im.alt='붙여넣은 그림';im.draggable=false;im.style.cursor='grab';el.appendChild(im);dragCard(im,el,n)}
+  else{const im=document.createElement('img');im.src=n.src;im.alt='붙여넣은 그림';im.draggable=false;im.style.cursor='grab';el.appendChild(im);dragCard(im,el,n);
+    if(n.w)el.style.width=n.w+'px';
+    im.addEventListener('dblclick',e=>{e.stopPropagation();e.preventDefault();
+      const nat=im.naturalWidth||280,big=Math.min(nat,Math.round((innerWidth-80)/view.k));
+      n.w=(n.w&&n.w>300)?280:big;el.style.width=n.w+'px';save();say(n.w>300?'원래 크기 · 다시 두 번 누르면 작게':'작게')});
+    const rs=document.createElement('div');rs.className='rs';rs.title='끌어서 크기 조절';el.appendChild(rs);
+    let r0=null;rs.addEventListener('pointerdown',e=>{e.stopPropagation();r0={x:e.clientX,w:el.offsetWidth};rs.setPointerCapture(e.pointerId)});
+    rs.addEventListener('pointermove',e=>{if(!r0)return;n.w=Math.max(80,Math.round(r0.w+(e.clientX-r0.x)/view.k));el.style.width=n.w+'px'});
+    const rEnd=()=>{if(!r0)return;r0=null;save()};rs.addEventListener('pointerup',rEnd);rs.addEventListener('pointercancel',rEnd)}
   dragCard(g,el,n);
   el.addEventListener('pointerdown',e=>{e.stopPropagation();document.querySelectorAll('.card.on').forEach(c=>{if(c!==el)c.classList.remove('on')});el.classList.add('on')});
   return el;
